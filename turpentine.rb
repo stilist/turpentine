@@ -21,18 +21,26 @@ PASSWORD = CONFIG['password']
 BASE_URL = 'http://twitter.com/statuses'
 
 class Turpentine
-  def timeline
-    result = get('friends_timeline')
+  def friends_timeline(newest_status)
+    if newest_status.nil?
+      result = get('friends_timeline', '')
+      newest_status = 0
+    else
+      result = get('friends_timeline', "since_id=#{newest_status}")
+    end
 
     statuses = ''
+    result.reverse.map { |status|
+      user = status['user']
+      time = Date.parse(status['created_at'], '%l:%i %p')
 
-    result.map { |keys|
-      user = keys['user']
+      statuses += "#{status['text']}\n-- #{user['name']} (#{time})\n\n"
 
-      statuses += "#{keys['text']}\n-- #{user['name']}\n\n"
+      newest_status = status['id']
     }
+    puts statuses
 
-    return statuses
+    return newest_status
   end
 
   def update(status)
@@ -41,9 +49,10 @@ class Turpentine
 
 
   # The machinery that runs it all
-  def get(api_method)
+  def get(api_method, data)
     response = open("#{BASE_URL}/#{api_method}.json",
-                    :http_basic_authentication => [USER, PASSWORD]).read
+                    :http_basic_authentication => [USER, PASSWORD],
+                    :body => data).read
     return JSON.parse(response)
   end
   def post(api_method, data)
@@ -55,9 +64,12 @@ class Turpentine
   end
 end
 
-turp = Turpentine.new
 
-puts turp.timeline
+$turp = Turpentine.new
 
-print "> "
-turp.update(STDIN.gets)
+# this loop will run until interrupted
+until 1==2
+  newest_status = $turp.friends_timeline(newest_status)
+
+  sleep(180) # three minutes
+end
