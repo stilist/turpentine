@@ -10,14 +10,54 @@
 require 'rubygems'
 require 'json'
 require 'net/http'
-require 'open-uri'
-require 'uri'
+require 'rest-open-uri'
 require 'yaml'
 
 # Config
 
 CONFIG = YAML::load(File.read('config.yaml'))
-$user = CONFIG['user']
-$password = CONFIG['password']
+USER = CONFIG['user']
+PASSWORD = CONFIG['password']
+BASE_URL = 'http://twitter.com/statuses'
 
-puts "#{$user} | #{$password}"
+class Turpentine
+  def timeline
+    result = get('friends_timeline')
+
+    statuses = ''
+
+    result.map { |keys|
+      user = keys['user']
+
+      statuses += "#{keys['text']}\n-- #{user['name']}\n\n"
+    }
+
+    return statuses
+  end
+
+  def update(status)
+    return post('update', "status=#{status}")
+  end
+
+
+  # The machinery that runs it all
+  def get(api_method)
+    response = open("#{BASE_URL}/#{api_method}.json",
+                    :http_basic_authentication => [USER, PASSWORD]).read
+    return JSON.parse(response)
+  end
+  def post(api_method, data)
+    response = open("#{BASE_URL}/#{api_method}.json",
+                    :http_basic_authentication => [USER, PASSWORD],
+                    :method => :post,
+                    :body => data).read
+    return JSON.parse(response)
+  end
+end
+
+turp = Turpentine.new
+
+puts turp.timeline
+
+print "> "
+turp.update(STDIN.gets)
