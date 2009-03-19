@@ -22,17 +22,14 @@ BASE_URL = 'http://twitter.com/statuses'
 
 class Turpentine
   def friends_timeline(newest_status)
-    if newest_status.nil?
-      result = get('friends_timeline', '')
-      newest_status = 0
-    else
-      result = get('friends_timeline', "since_id=#{newest_status}")
-    end
+    result = get('friends_timeline',
+                 newest_status.nil? ? '' : "since_id=#{newest_status}")
+                 # newest_status is empty when we first start
 
     statuses = ''
     result.reverse.map { |status|
       user = status['user']
-      time = Date.parse(status['created_at'], '%l:%i %p')
+      time = Date.parse(status['created_at']).strftime('%l:%M %p')
 
       statuses += "#{status['text']}\n-- #{user['name']} (#{time})\n\n"
 
