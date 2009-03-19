@@ -1,6 +1,6 @@
 # turpentine
 
-A simple Twitter client, written in Ruby.
+A delightful Twitter/Ruby on Rails learning project.
 
 ## How to use
 
@@ -9,3 +9,8 @@ A simple Twitter client, written in Ruby.
 1. Edit the username and password to match yours
 1. `chmod +x turpentine.rb`
 1. `./turpentine.rb`
+
+## Issues
+
+* It would be good to verify that successful responses have a 200 code. I’m not
+sure how to do it; `rest-open-uri` doesn’t seem to expose such information.

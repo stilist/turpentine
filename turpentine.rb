@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-# A simple Twitter client.
+# A delightful Twitter/Ruby on Rails learning project.
 #
 # Usage:
 # ./turpentine.rb
