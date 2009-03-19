@@ -1,0 +1,11 @@
+# turpentine
+
+A simple Twitter client, written in Ruby.
+
+## How to use
+
+1. `sudo gem install json rest-open-uri yaml`
+1. Rename `config-example.yaml` to `config.yaml`
+1. Edit the username and password to match yours
+1. `chmod +x turpentine.rb`
+1. `./turpentine.rb`
