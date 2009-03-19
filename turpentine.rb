@@ -9,7 +9,6 @@
 
 require 'rubygems'
 require 'json'
-require 'net/http'
 require 'rest-open-uri'
 require 'yaml'
 
