@@ -28,36 +28,28 @@ BASE_URL = 'http://twitter.com'
 
 class Turpentine
   def friends_timeline(newest_status)
-    timeline = get('friends_timeline',
-                 newest_status.nil? ? '' : "since_id=#{newest_status}").reverse
-                 # newest_status is empty when we first start
-                 # Reverse the timeline so new tweets are on the bottom
+    # newest_status is empty when we launch
+    since = newest_status.nil? ? '' : "since_id=#{newest_status}"
+    timeline = api_call('friends_timeline', since).reverse
+    # Reverse the timeline so new tweets are on the bottom
 
-    statuses = ''
     timeline.map { |status|
       user = status['user']
-      time = Date.parse(status['created_at']).strftime('%l:%M %p')
+      time = DateTime.parse(status['created_at']).strftime('%l:%M %p')
 
-      statuses += "#{status['text']}\n-- #{user['name']} (#{time})\n\n"
+      puts "#{status['text']}\n-- #{user['name']} (#{time}; #{status['id']})\n\n"
     }
-    puts statuses
 
-    call_status = get('rate_limit_status', '', 'account')
-    call_limit = call_status['hourly_limit']
-    calls_left = call_status['remaining_hits']
-    puts "(#{calls_left}/#{call_limit} API calls remaining for the hour)\n\n"
-
-    # Return the id of the first (most recent) status
-    # This will passed back in as newest_status
-    return timeline.first['id']
+    # return the id of the most recent status
+    # if there are no new statuses, send back the one we came in with
+    return timeline.empty? ? newest_status : timeline.last['id']
   end
 
   def update(status)
-    return post('update', "status=#{status}")
+    return api_call('update', "status=#{status}", 'post')
   end
 
 
-  # The machinery that runs it all
   def error(error_code)
     status_number = error_code.to_s.split(' ')[0]
 
@@ -76,23 +68,20 @@ class Turpentine
       raise "Twitter's running slowly.\n\n"
     end
   end
-  def get(api_method, data = '', kind = 'statuses')
+
+  # The machinery that runs it all
+  def api_call(api_method, query = '', verb = 'get', api_type = 'statuses')
+    verb = 'get' if verb == '' # this is lame
     begin
-      response = open("#{BASE_URL}/#{kind}/#{api_method}.json",
+      query = "?#{query}" if !query.empty?
+
+      # this previously used ':body => query', but that didn't seem to work
+      response = open("#{BASE_URL}/#{api_type}/#{api_method}.json#{query}",
                       :http_basic_authentication => [USER, PASSWORD],
-                      :body => data).read
+                      :method => verb.to_sym).read
       return JSON.parse(response)
     rescue OpenURI::HTTPError => error_code
       error(error_code)
-    end
-  end
-  def post(api_method, data, kind = 'statuses')
-    begin
-      response = open("#{BASE_URL}/#{kind}/#{api_method}.json",
-                      :http_basic_authentication => [USER, PASSWORD],
-                      :method => :post,
-                      :body => data).read
-      return JSON.parse(response)
     end
   end
 end
@@ -106,4 +95,5 @@ until 1==2
 
   # three minutes, to make sure we don't hit the limit
   sleep(180)
+  puts "** Checked!\n\n"
 end
