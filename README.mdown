@@ -1,4 +1,4 @@
-# turpentine
+# Turpentine
 
 A delightful Twitter/Ruby on Rails learning project.
 
@@ -9,8 +9,15 @@ A delightful Twitter/Ruby on Rails learning project.
 1. Edit the username and password to match yours
 1. `chmod +x turpentine.rb`
 1. `./turpentine.rb`
+1. If you want to post tweets, open a new window and run `./turpentine.rb out`
 
 ## Issues
 
+This is all pretty clumsy at the moment, but it’s getting better. Here are some
+of the bigger concerns:
+
+* The only things that currently work are tweeting, viewing @replies, and
+seeing the friends_timeline. Favorites, direct messages, &c. don’t exist.
 * It would be good to verify that successful responses have a 200 code. I’m not
 sure how to do it; `rest-open-uri` doesn’t seem to expose such information.
+* Currently there is no time zone support, so you’ll see weird timestamps.
