@@ -1,3 +1,9 @@
 ---
-user: username
-password: password
+auth_mode: basic # basic, oauth
+basic_auth:
+    user: username
+    password: password
+oauth:
+    consumer_key: key
+    consumer_secret: secret
+update_every: 5 # minutes

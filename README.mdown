@@ -9,7 +9,13 @@ A delightful Twitter/Ruby on Rails learning project.
 1. Edit the username and password to match yours
 1. `chmod +x turpentine.rb`
 1. `./turpentine.rb`
-1. If you want to post tweets, open a new window and run `./turpentine.rb out`
+1. To post tweets, open a new window and run `./turpentine.rb out`
+
+If you want to experiment with OAuth, edit the `auth_mode` line of
+`config.yaml` to read `oauth`. You’ll need to [register for OAuth][oareg] and
+edit the `oauth` section of `config.yaml` for your consumer key and secret.
+
+ [oareg]: http://twitter.com/oauth_clients/new
 
 ## Issues
 
