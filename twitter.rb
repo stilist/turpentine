@@ -22,9 +22,14 @@ class Twitter
       # debugging
 #     puts " * * * #{api_method}#{query}"
 
-      response = open("#{BASE_URL}/#{api_type}/#{api_method}.json#{query}",
-                      :http_basic_authentication => [USER, PASSWORD],
-                      :method => verb.to_sym).read
+      # default to basic auth
+      unless AUTH_MODE == 'oauth'
+        response = open("#{BASE_URL}/#{api_type}/#{api_method}.json#{query}",
+                        :http_basic_authentication => [USER, PASSWORD],
+                        :method => verb.to_sym).read
+      else
+      end
+
       return JSON.parse(response)
     rescue OpenURI::HTTPError => error_code
       puts error_code

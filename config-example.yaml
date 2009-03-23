@@ -6,4 +6,6 @@ basic_auth:
 oauth:
     consumer_key: key
     consumer_secret: secret
+    request_token:
+    request_secret:
 update_every: 5 # minutes

@@ -4,16 +4,20 @@ A delightful Twitter/Ruby on Rails learning project.
 
 ## How to use
 
-1. `sudo gem install json rest-open-uri yaml`
+1. `sudo gem install json yaml rest-open-uri`
 1. Rename `config-example.yaml` to `config.yaml`
-1. Edit the username and password to match yours
+1. Edit `user` and `password` to match yours
 1. `chmod +x turpentine.rb`
 1. `./turpentine.rb`
 1. To post tweets, open a new window and run `./turpentine.rb out`
 
-If you want to experiment with OAuth, edit the `auth_mode` line of
-`config.yaml` to read `oauth`. You’ll need to [register for OAuth][oareg] and
-edit the `oauth` section of `config.yaml` for your consumer key and secret.
+### OAuth mode
+
+1. `gem sources -a http://gems.github.com`
+1. `sudo gem install moomerman-twitter_oauth`
+1. Edit the `auth_mode` line of `config.yaml` to read `oauth`. You’ll need to
+[register for OAuth][oareg] and edit the `oauth` section of `config.yaml` for
+your consumer key and secret.
 
  [oareg]: http://twitter.com/oauth_clients/new
 
