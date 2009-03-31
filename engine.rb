@@ -23,7 +23,7 @@ class Engine
       STDIN.gets
   
       access_token = client.authorize(
-          request_token.token,  
+          request_token.token,
           request_token.secret
       )
   
