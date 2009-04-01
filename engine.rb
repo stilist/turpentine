@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/ruby -w
 
 # Code is provided under the MIT license. See LICENSE for details.
 
@@ -9,7 +9,7 @@ class Engine
     request_token = CONFIG['oauth']['request_token']
     request_secret = CONFIG['oauth']['request_secret']
 
-    if request_token.nil? and request_secret.nil?
+    if request_token.nil? && request_secret.nil?
       client = TwitterOAuth::Client.new(
            :consumer_key => consumer_key,
            :consumer_secret => consumer_secret
@@ -50,7 +50,7 @@ class Engine
     friends = twitter.friends_timeline(newest_status)
 
     # don't show @replies older than the oldest update in the friends timeline
-    newest_status = friends.first['id'] if !friends.empty? and newest_status.nil?
+    newest_status = friends.first['id'] if !friends.empty? && newest_status.nil?
     replies = twitter.at_replies(newest_status)
 
     # merge everything to eliminate duplicates
@@ -70,7 +70,7 @@ class Engine
 
   def format(data, decorator)
     timeline = ''
-    data.map { |status|
+    data.map do |status|
       user = status['user']
       time = DateTime.parse(status['created_at']).strftime('%l:%M %p')
       text = CGI.unescape(status['text'])
@@ -79,7 +79,7 @@ class Engine
       text.insert(80, "\n#{decorator} ") if data.length >= 80
 
       timeline += "#{text}\n-- #{user['name']} (@#{user['screen_name']}) at #{time}\n\n"
-    }
+    end
 
     return timeline
   end

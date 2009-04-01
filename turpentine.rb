@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/ruby -w
 
 # A delightful Twitter/Ruby on Rails learning project.
 #
@@ -19,7 +19,7 @@ require 'twitter'
 # configuration is done entirely through config.yaml
 CONFIG_FILE = 'config.yaml'
 
-if File.exist?(CONFIG_FILE) and File.ftype(CONFIG_FILE) === 'file'
+if File.exist?(CONFIG_FILE) && File.ftype(CONFIG_FILE) === 'file'
   CONFIG = YAML::load(File.read('config.yaml'))
 else
   raise "\n\nPlease edit config-example.yaml and save it as config.yaml\n\n"

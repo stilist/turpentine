@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/ruby -w
 
 # Code is provided under the MIT license. See LICENSE for details.
 
@@ -14,7 +14,7 @@ class Twitter
   end
 
   # The machinery that runs it all
-  def api_call(api_method, query_in = '', verb = 'get', api_type = 'statuses')
+  def api_call(api_method, query_in='', verb='get', api_type='statuses')
     begin
       query = "?#{query_in}" unless query_in.empty?
       query += "&source=Turpentine" if verb == 'post'
