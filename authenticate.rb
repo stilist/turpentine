@@ -41,13 +41,13 @@ class Authenticate
         CONFIG['oauth']['request_secret'] = access_token.secret
         YAML::dump(CONFIG, out)
       end
-    # OAuth authorization has previously been completed.
+    # The user has already authorized this application.
     else
       oauth_client = TwitterOAuth::Client.new(
-          :consumer_key => consumer_key,
-          :consumer_secret => consumer_secret,
-          :token => request_token,
-          :secret => request_secret )
+          :consumer_key => credentials['consumer_key'],
+          :consumer_secret => credentials['consumer_secret'],
+          :token => credentials['request_token'],
+          :secret => credentials['request_secret'] )
     end
 
     return oauth_client
