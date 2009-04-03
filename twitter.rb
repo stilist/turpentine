@@ -1,38 +1,46 @@
 #!/usr/bin/ruby -w
 
-# Code is provided under the MIT license. See LICENSE for details.
+if __FILE__ == $0
+  raise "\n\nThis file is not meant to be run standalone.\n\n"
+end
 
+
+# Process calls to the Twitter API.
 class Twitter
-  def friends_timeline(newest_status)
-    # newest_status is empty when we launch
-    since = newest_status.nil? ? '' : "since_id=#{newest_status}"
-    return api_call('friends_timeline', since)
-  end
+  def api_call(api_method, query_string='', verb='get', api_type='statuses')
+    puts " * * api_call('#{api_method}', '#{query_string}', '#{verb}', '#{api_type}')" if DEBUG_MODE == true
 
-  def at_replies(newest_status)
-    return api_call('replies', "since_id=#{newest_status}")
-  end
-
-  # The machinery that runs it all
-  def api_call(api_method, query_in='', verb='get', api_type='statuses')
     begin
-      query = "?#{query_in}" unless query_in.empty?
-      query += "&source=Turpentine" if verb == 'post'
+      query = query_string.empty? ? '' : "?#{query_string}"
+      query += '&source=Turpentine' if AUTH_MODE == 'basic' && verb == 'post'
+      # Add on the client name if we're posting a new tweet via basic auth.
 
-      # debugging
-#     puts " * * * #{api_method}#{query}"
+      authenticate = Authenticate.new
 
-      # default to basic auth
-      unless AUTH_MODE == 'oauth'
-        response = open("#{BASE_URL}/#{api_type}/#{api_method}.json#{query}",
-                        :http_basic_authentication => [USER, PASSWORD],
-                        :method => verb.to_sym).read
+      if AUTH_MODE == 'basic'
+        credentials = authenticate.use_basic_auth
+
+        puts " * * /#{api_type}/#{api_method}.json#{query} [#{verb}]" if DEBUG_MODE == true
+
+        response = open("http://twitter.com/#{api_type}/#{api_method}.json#{query}",
+            :http_basic_authentication => [credentials['user'], credentials['password']],
+            :method => verb.to_sym ).read
       else
+        # XXX: Dunno how to handle this yet; will likely involve use of
+        # twitter_oauth's returned object.
       end
 
       return JSON.parse(response)
-    rescue OpenURI::HTTPError => error_code
-      puts error_code
+    rescue OpenURI::HTTPError => error_message
+      handle_error(error_message)
     end
-  end 
+  end
+
+  def handle_error(error_message)
+=begin
+    error_code = error_message.split(' ')[0]
+    error_explanation = #
+=end
+    puts error_message
+  end
 end

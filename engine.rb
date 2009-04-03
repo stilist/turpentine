@@ -1,86 +1,58 @@
 #!/usr/bin/ruby -w
 
-# Code is provided under the MIT license. See LICENSE for details.
+if __FILE__ == $0
+  raise "\n\nThis file is not meant to be run standalone.\n\n"
+end
 
 class Engine
-  def oauthorize
-    consumer_key = CONFIG['oauth']['consumer_key']
-    consumer_secret = CONFIG['oauth']['consumer_secret']
-    request_token = CONFIG['oauth']['request_token']
-    request_secret = CONFIG['oauth']['request_secret']
+  # These two methods are the 'higher level interface' to the API-call method.
+  def get_timeline(api_method, since_id)
+    puts " * * get_timeline(#{api_method}, #{since_id})" if DEBUG_MODE == true
 
-    if request_token.nil? && request_secret.nil?
-      client = TwitterOAuth::Client.new(
-           :consumer_key => consumer_key,
-           :consumer_secret => consumer_secret
-           )
-      request_token = client.request_token
-
-      puts "Please open the following address in your browser to authorize this application:"
-      puts "#{request_token.authorize_url}\n"
-  
-      puts "Hit enter when you have completed authorization."
-      STDIN.gets
-  
-      access_token = client.authorize(
-          request_token.token,
-          request_token.secret
-      )
-  
-      File.open(CONFIG_FILE, 'w') do |out|
-        CONFIG['oauth']['request_token'] = access_token.token
-        CONFIG['oauth']['request_secret'] = access_token.secret
-        YAML::dump(CONFIG, out)
-      end
-    else
-      client = TwitterOAuth::Client.new(
-        :consumer_key => consumer_key,
-        :consumer_secret => consumer_secret,
-        :token => request_token,
-        :secret => request_secret
-      )
-    end
-
-    return client
+    since = since_id == 0 ? '' : "since_id=#{since_id}"
+    twitter = Twitter.new
+    twitter.api_call(api_method, since)
   end
 
-  def timeline(newest_status)
+  def post_new_status(status_text)
+    puts " * * post_new_status('#{status_text}')" if DEBUG_MODE == true
+
+    status = CGI.escape(status_text)
     twitter = Twitter.new
-
-    friends = twitter.friends_timeline(newest_status)
-
-    # don't show @replies older than the oldest update in the friends timeline
-    newest_status = friends.first['id'] if !friends.empty? && newest_status.nil?
-    replies = twitter.at_replies(newest_status)
-
-    # merge everything to eliminate duplicates
-    timeline = friends | replies
-    puts format(timeline.reverse, '') unless timeline.empty?
-
-    # return the id of the most recent timeline item
-    # if there are no new statuses, send back the one we came in with
-    return friends.empty? ? newest_status : friends.first['id']
-  end
-
-  def update(status)
-    twitter = Twitter.new
-    status = CGI.escape(status)
     twitter.api_call('update', "status=#{status}", 'post')
   end
 
-  def format(data, decorator)
-    timeline = ''
-    data.map do |status|
+  def get_all_timelines(since_id)
+    puts " * * get_all_timelines(#{since_id})" if DEBUG_MODE == true
+
+    # XXX: This since_id stuff is sloppy.
+    since_id = 0 if since_id.nil?
+    friends = get_timeline('friends_timeline', since_id)
+
+    # If Turpentine has just launched, don't get mentions older than what's in
+    # the friends timeline. (Also test if the friends timeline is empty,
+    # because the user may not be following anyone.)
+    since_id = friends.first['id'] if since_id == 0 && !friends.empty?
+    mentions = get_timeline('replies', since_id)
+
+    # Remove duplicates by unifying the timelines.
+    merged_timeline = friends | mentions
+    puts process(merged_timeline.reverse) unless merged_timeline.empty?
+
+    since_id
+  end
+
+  # Clean up the data for display.
+  def process(statuses)
+    formatted_timeline = ''
+    statuses.map do |status|
       user = status['user']
       time = DateTime.parse(status['created_at']).strftime('%l:%M %p')
       text = CGI.unescape(status['text'])
 
-      text = decorator.empty? ? text : text.insert(0, "#{decorator} ")
-      text.insert(80, "\n#{decorator} ") if data.length >= 80
-
-      timeline += "#{text}\n-- #{user['name']} (@#{user['screen_name']}) at #{time}\n\n"
+      formatted_timeline += "#{text}\n-- @#{user['screen_name']} at #{time}\n\n"
     end
 
-    return timeline
+    formatted_timeline
   end
 end

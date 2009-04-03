@@ -1,48 +1,29 @@
 #!/usr/bin/ruby -w
 
-# A delightful Twitter/Ruby on Rails learning project.
-#
-# Usage:
-#
-# ./turpentine.rb
-# ./turpentine.rb out
-#
-# Code is provided under the MIT license. See LICENSE for details.
-
-require 'rubygems'
-require 'yaml'
-
-require 'engine'
-require 'twitter'
+require 'rubygems'; require 'cgi'; require 'yaml'
+require 'authenticate'; require 'engine'; require 'twitter'
 
 
 # configuration is done entirely through config.yaml
 CONFIG_FILE = 'config.yaml'
 
-if File.exist?(CONFIG_FILE) && File.ftype(CONFIG_FILE) === 'file'
+if File.exist?(CONFIG_FILE) && File.ftype(CONFIG_FILE) == 'file'
   CONFIG = YAML::load(File.read('config.yaml'))
 else
-  raise "\n\nPlease edit config-example.yaml and save it as config.yaml\n\n"
-  abort
+  abort "\n\nPlease edit config-example.yaml and save it as config.yaml\n\n"
 end
 
-BASE_URL = 'http://twitter.com'
-USER = CONFIG['basic_auth']['user']
-PASSWORD = CONFIG['basic_auth']['password']
+
 # don't check in more than once every three minutes
 UPDATE_EVERY = CONFIG['update_every'] < 3 ? 3 : CONFIG['update_every']
+DEBUG_MODE = false
 
-if CONFIG['auth_mode'] == 'oauth'
-  AUTH_MODE = 'oauth'
-  # only load the gem if it's needed
+AUTH_MODE = CONFIG['auth_mode']
+if AUTH_MODE == 'oauth'
   require 'twitter_oauth'
 else
-  AUTH_MODE = 'basic'
-  # require'd by twitter_oauth
-  require 'json'
-  require 'rest-open-uri'
-  # used to urlencode new tweets
-  require 'cgi'
+  # OAuth mode automatically gets these gems from twitter_oauth.
+  require 'json'; require 'rest-open-uri'
 end
 
 
@@ -54,21 +35,13 @@ if ARGV[0] == 'out'
     print '> '
     status = STDIN.gets.chomp!
 
-    $turp.update(status) unless status.empty?
+    $turp.post_new_status(status) unless status.empty?
 
     puts
   end
 else
-  # this loop will run until interrupted
   until 1 == 2
-    if AUTH_MODE == 'oauth'
-      client = $turp.oauthorize
-
-      puts client.friends_timeline
-    else
-      newest_status = $turp.timeline(newest_status)
-    end
-    
+    since_id = $turp.get_all_timelines(since_id)
     sleep(UPDATE_EVERY * 60)
   end
 end
