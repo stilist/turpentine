@@ -14,16 +14,18 @@ else
 end
 
 
+DEBUG_MODE = false
 # don't check in more than once every three minutes
 UPDATE_EVERY = CONFIG['update_every'] < 3 ? 3 : CONFIG['update_every']
-DEBUG_MODE = false
 
 AUTH_MODE = CONFIG['auth_mode']
-if AUTH_MODE == 'oauth'
-  require 'twitter_oauth'
-else
+if AUTH_MODE == 'basic'
   # OAuth mode automatically gets these gems from twitter_oauth.
   require 'json'; require 'rest-open-uri'
+elsif AUTH_MODE == 'oauth'
+  require 'twitter_oauth'
+else
+  abort 'Invalid authentication mode. You must use basic or oauth.'
 end
 
 
