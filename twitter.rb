@@ -12,25 +12,34 @@ class Twitter
 
     begin
       query = query_string.empty? ? '' : "?#{query_string}"
+      # Add on our client name if we're posting a new tweet via basic auth.
       query += '&source=Turpentine' if AUTH_MODE == 'basic' && verb == 'post'
-      # Add on the client name if we're posting a new tweet via basic auth.
 
-      authenticate = Authenticate.new
+      authentication = Authenticate.new
 
       if AUTH_MODE == 'basic'
-        credentials = authenticate.use_basic_auth
-
-        puts " * * /#{api_type}/#{api_method}.json#{query} [#{verb}]" if DEBUG_MODE == true
+        credentials = authentication.use_basic_auth
 
         response = open("http://twitter.com/#{api_type}/#{api_method}.json#{query}",
             :http_basic_authentication => [credentials['user'], credentials['password']],
             :method => verb.to_sym ).read
-      else
-        # XXX: Dunno how to handle this yet; will likely involve use of
-        # twitter_oauth's returned object.
+
+        result = JSON.parse(reponse)
+      elsif AUTH_MODE == 'oauth'
+        # XXX: This is horrible, but it works until I figure out the right way.
+
+        credentials = authentication.use_oauth
+
+        if api_method == 'friends_timeline'
+          result = credentials.friends_timeline
+        elsif api_method == 'replies'
+          result = credentials.replies
+        else
+          result = []
+        end
       end
 
-      return JSON.parse(response)
+      return result
     rescue OpenURI::HTTPError => error_message
       handle_error(error_message)
     end
